@@ -1,0 +1,412 @@
+import { useState, useEffect, useCallback } from 'react';
+import { Routes, Route, NavLink, Navigate, useNavigate } from 'react-router-dom';
+import { StoreProvider, useStore } from './lib/store';
+import { useI18n } from './lib/i18n';
+import {
+  isFirebaseConfigured,
+  signInWithGoogle,
+  signOut,
+  onAuthChange,
+  isEmailAllowed,
+} from './lib/firebase';
+import Dashboard from './pages/Dashboard';
+import MonthView from './pages/MonthView';
+import YearView from './pages/YearView';
+import Settings from './pages/Settings';
+import {
+  Wallet, LogOut, Sun, Moon, LayoutDashboard,
+  CalendarDays, BarChart3, Settings as SettingsIcon, Menu, X,
+  AlertTriangle, Globe,
+} from 'lucide-react';
+import { cn } from './lib/utils';
+
+function ThemeToggle() {
+  const { t } = useI18n();
+  const [dark, setDark] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('theme');
+      if (stored) return stored === 'dark';
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    return true;
+  });
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', dark);
+    localStorage.setItem('theme', dark ? 'dark' : 'light');
+  }, [dark]);
+
+  return (
+    <button
+      onClick={() => setDark(!dark)}
+      className="p-2 rounded-lg hover:bg-secondary transition-colors"
+      aria-label={t('auth.toggleTheme')}
+    >
+      {dark ? <Sun size={18} /> : <Moon size={18} />}
+    </button>
+  );
+}
+
+function LanguageSwitcher() {
+  const { locale, setLocale } = useI18n();
+  return (
+    <button
+      onClick={() => setLocale(locale === 'en' ? 'bg' : 'en')}
+      className="flex items-center gap-1 px-2 py-1.5 rounded-lg hover:bg-secondary transition-colors text-xs font-bold tracking-wider text-muted-foreground"
+      aria-label="Switch language"
+    >
+      <Globe size={14} />
+      {locale === 'en' ? 'BG' : 'EN'}
+    </button>
+  );
+}
+
+function LoginScreen() {
+  const { t } = useI18n();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleGoogle = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const user = await signInWithGoogle();
+      if (!user) {
+        setError(t('auth.signInFailed'));
+      }
+    } catch (err: unknown) {
+      if (err instanceof Error && err.message === 'ACCESS_DENIED') {
+        setError(t('auth.accessDenied'));
+      } else {
+        setError(t('auth.signInFailed'));
+      }
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-secondary/30 to-background p-4">
+      <div className="w-full max-w-md bg-card border border-border rounded-2xl p-10 shadow-2xl animate-fade-in">
+        <div className="absolute top-4 right-4">
+          <LanguageSwitcher />
+        </div>
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center mx-auto mb-5 shadow-lg shadow-primary/30">
+            <Wallet size={28} className="text-primary-foreground" />
+          </div>
+          <h1 className="text-3xl font-bold tracking-tight mb-2">{t('common.appName')}</h1>
+          <p className="text-muted-foreground text-sm">{t('auth.familyFinanceTracker')}</p>
+        </div>
+
+        <button
+          onClick={handleGoogle}
+          disabled={loading}
+          className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl border border-border hover:bg-secondary transition-colors font-medium disabled:opacity-50"
+        >
+          <svg viewBox="0 0 24 24" width="20" height="20">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+          </svg>
+          {loading ? t('auth.signingIn') : t('auth.signInWithGoogle')}
+        </button>
+
+        {error && (
+          <div className="mt-4 px-4 py-2.5 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm">
+            {error}
+          </div>
+        )}
+
+        <p className="text-center text-xs text-muted-foreground/60 mt-6 leading-relaxed">
+          {t('auth.dataStoredSecurely')}
+          <br />
+          {t('auth.signInToGetStarted')}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function FirebaseNotConfigured() {
+  const { t } = useI18n();
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-secondary/30 to-background p-4">
+      <div className="w-full max-w-md bg-card border border-border rounded-2xl p-10 shadow-2xl animate-fade-in text-center">
+        <div className="w-16 h-16 rounded-2xl bg-destructive/10 flex items-center justify-center mx-auto mb-5">
+          <AlertTriangle size={28} className="text-destructive" />
+        </div>
+        <h1 className="text-2xl font-bold tracking-tight mb-2">{t('firebase.notConfiguredTitle')}</h1>
+        <p className="text-muted-foreground text-sm mb-4">
+          {t('firebase.notConfiguredDesc')}
+        </p>
+        <div className="text-left bg-secondary/50 rounded-xl p-4 text-xs font-mono space-y-1 text-muted-foreground">
+          <div>VITE_FIREBASE_API_KEY=...</div>
+          <div>VITE_FIREBASE_AUTH_DOMAIN=...</div>
+          <div>VITE_FIREBASE_PROJECT_ID=...</div>
+          <div>VITE_FIREBASE_STORAGE_BUCKET=...</div>
+          <div>VITE_FIREBASE_MESSAGING_SENDER_ID=...</div>
+          <div>VITE_FIREBASE_APP_ID=...</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function StoreLoadingGate({ children }: { children: React.ReactNode }) {
+  const { loading } = useStore();
+  const { t } = useI18n();
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="animate-pulse text-muted-foreground">{t('common.loadingData')}</div>
+      </div>
+    );
+  }
+  return <>{children}</>;
+}
+
+function getNavItems(t: (key: string) => string) {
+  return [
+    { to: '/', label: t('nav.dashboard'), icon: LayoutDashboard },
+    { to: `/month/${new Date().getFullYear()}/${new Date().getMonth() + 1}`, label: t('nav.monthly'), icon: CalendarDays },
+    { to: `/yearly/${new Date().getFullYear()}`, label: t('nav.yearly'), icon: BarChart3 },
+    { to: '/settings', label: t('nav.settings'), icon: SettingsIcon },
+  ];
+}
+
+function AppShell({ user, onLogout }: { user: { email: string; name: string }; onLogout: () => void }) {
+  const [mobileNav, setMobileNav] = useState(false);
+  const { t } = useI18n();
+  const navItems = getNavItems(t);
+
+  return (
+    <StoreProvider uid={user.email}>
+      <div className="min-h-screen bg-background text-foreground">
+        {/* Header */}
+        <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-xl">
+          <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <button
+                className="md:hidden p-2 -ml-2 rounded-lg hover:bg-secondary"
+                onClick={() => setMobileNav(!mobileNav)}
+              >
+                {mobileNav ? <X size={20} /> : <Menu size={20} />}
+              </button>
+              <NavLink to="/" className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shadow-sm">
+                  <Wallet size={16} className="text-primary-foreground" />
+                </div>
+                <span className="font-bold text-lg tracking-tight hidden sm:inline">{t('common.appName')}</span>
+              </NavLink>
+            </div>
+
+            {/* Desktop Nav */}
+            <nav className="hidden md:flex items-center gap-1">
+              {navItems.map(({ to, label, icon: Icon }) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  onClick={() => setMobileNav(false)}
+                  className={({ isActive }) =>
+                    cn(
+                      'px-3 py-1.5 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors',
+                      isActive
+                        ? 'bg-primary/10 text-primary'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                    )
+                  }
+                  end={to === '/'}
+                >
+                  <Icon size={16} />
+                  {label}
+                </NavLink>
+              ))}
+            </nav>
+
+            <div className="flex items-center gap-2">
+              <LanguageSwitcher />
+              <ThemeToggle />
+              <div className="hidden sm:block text-xs text-muted-foreground truncate max-w-[120px]">
+                {user.name}
+              </div>
+              <button
+                onClick={onLogout}
+                className="p-2 rounded-lg hover:bg-secondary transition-colors text-muted-foreground"
+                aria-label={t('auth.signOut')}
+              >
+                <LogOut size={16} />
+              </button>
+            </div>
+          </div>
+
+          {/* Mobile nav */}
+          {mobileNav && (
+            <nav className="md:hidden border-t border-border p-2 flex gap-1 bg-card animate-fade-in">
+              {navItems.map(({ to, label, icon: Icon }) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  onClick={() => setMobileNav(false)}
+                  className={({ isActive }) =>
+                    cn(
+                      'flex-1 px-2 py-2 rounded-lg text-xs font-medium flex flex-col items-center gap-1 transition-colors',
+                      isActive
+                        ? 'bg-primary/10 text-primary'
+                        : 'text-muted-foreground'
+                    )
+                  }
+                  end={to === '/'}
+                >
+                  <Icon size={16} />
+                  {label}
+                </NavLink>
+              ))}
+            </nav>
+          )}
+        </header>
+
+        {/* Main Content */}
+        <main className="max-w-7xl mx-auto px-4 py-6 pb-20">
+          <StoreLoadingGate>
+            <Routes>
+              <Route path="/" element={<DashboardPage />} />
+              <Route path="/year/:year" element={<DashboardPage />} />
+              <Route path="/month/:year/:month" element={<MonthPage />} />
+              <Route path="/yearly/:year" element={<YearPage />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </StoreLoadingGate>
+        </main>
+      </div>
+    </StoreProvider>
+  );
+}
+
+function DashboardPage() {
+  const navigate = useNavigate();
+  const now = new Date();
+  const [selectedYear, setSelectedYear] = useState(now.getFullYear());
+
+  const handleNavigateToMonth = useCallback((year: number, month: number) => {
+    navigate(`/month/${year}/${month}`);
+  }, [navigate]);
+
+  return (
+    <Dashboard
+      selectedYear={selectedYear}
+      onNavigateToMonth={handleNavigateToMonth}
+      onYearChange={setSelectedYear}
+    />
+  );
+}
+
+function MonthPage() {
+  const navigate = useNavigate();
+  const now = new Date();
+  const [year, setYear] = useState(now.getFullYear());
+  const [month, setMonth] = useState(now.getMonth() + 1);
+
+  const handleMonthChange = useCallback((m: number) => {
+    if (m < 1) {
+      setYear((y) => y - 1);
+      setMonth(12);
+      navigate(`/month/${year - 1}/12`, { replace: true });
+    } else if (m > 12) {
+      setYear((y) => y + 1);
+      setMonth(1);
+      navigate(`/month/${year + 1}/1`, { replace: true });
+    } else {
+      setMonth(m);
+      navigate(`/month/${year}/${m}`, { replace: true });
+    }
+  }, [navigate, year]);
+
+  const handleYearChange = useCallback((y: number) => {
+    setYear(y);
+    navigate(`/month/${y}/${month}`, { replace: true });
+  }, [navigate, month]);
+
+  return (
+    <MonthView
+      year={year}
+      month={month}
+      onMonthChange={handleMonthChange}
+      onYearChange={handleYearChange}
+    />
+  );
+}
+
+function YearPage() {
+  const navigate = useNavigate();
+  const now = new Date();
+  const [year, setYear] = useState(now.getFullYear());
+
+  const handleYearChange = useCallback((y: number) => {
+    setYear(y);
+    navigate(`/yearly/${y}`, { replace: true });
+  }, [navigate]);
+
+  const handleNavigateToMonth = useCallback((yr: number, month: number) => {
+    navigate(`/month/${yr}/${month}`);
+  }, [navigate]);
+
+  return (
+    <YearView
+      year={year}
+      onYearChange={handleYearChange}
+      onNavigateToMonth={handleNavigateToMonth}
+    />
+  );
+}
+
+export default function App() {
+  const { t } = useI18n();
+  const [user, setUser] = useState<{ email: string; name: string } | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!isFirebaseConfigured) {
+      setLoading(false);
+      return;
+    }
+
+    const unsub = onAuthChange(async (firebaseUser) => {
+      if (firebaseUser) {
+        if (!isEmailAllowed(firebaseUser.email || '')) {
+          await signOut();
+          setUser(null);
+          setLoading(false);
+          return;
+        }
+        setUser({
+          email: firebaseUser.email || '',
+          name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'User',
+        });
+      } else {
+        setUser(null);
+      }
+      setLoading(false);
+    });
+    return unsub;
+  }, []);
+
+  const handleLogout = useCallback(async () => {
+    await signOut();
+    setUser(null);
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-pulse text-muted-foreground">{t('common.loading')}</div>
+      </div>
+    );
+  }
+
+  if (!isFirebaseConfigured) return <FirebaseNotConfigured />;
+  if (!user) return <LoginScreen />;
+
+  return <AppShell user={user} onLogout={handleLogout} />;
+}
