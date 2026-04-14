@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 150" fill="none">
+  <rect width="520" height="150" rx="8" fill="#f8f9fa"/>
+  <!-- Input field with text -->
+  <rect x="20" y="15" width="280" height="36" rx="6" fill="white" stroke="#6366f1" stroke-width="2"/>
+  <text x="32" y="38" font-family="system-ui" font-size="13" fill="#212529">Elec</text>
+  <text x="60" y="38" font-family="system-ui" font-size="13" fill="#adb5bd">tricity Raya str.</text>
+  <!-- Dropdown suggestions -->
+  <rect x="20" y="53" width="280" height="80" rx="6" fill="white" stroke="#dee2e6" stroke-width="1" filter="url(#shadow)"/>
+  <rect x="22" y="55" width="276" height="24" rx="4" fill="#eef2ff"/>
+  <text x="32" y="72" font-family="system-ui" font-size="12" fill="#212529">Electricity Raya str.</text>
+  <text x="280" y="72" font-family="monospace" font-size="11" fill="#6c757d" text-anchor="end">53.02</text>
+  <text x="32" y="96" font-family="system-ui" font-size="12" fill="#495057">Electricity I Ivanov bul.</text>
+  <text x="280" y="96" font-family="monospace" font-size="11" fill="#6c757d" text-anchor="end">2.33</text>
+  <text x="32" y="120" font-family="system-ui" font-size="12" fill="#495057">Electricity G. Kondolov</text>
+  <text x="280" y="120" font-family="monospace" font-size="11" fill="#6c757d" text-anchor="end">45.10</text>
+  <!-- Amount auto-fill arrow -->
+  <path d="M 340 40 C 380 40, 380 67, 420 67" stroke="#10b981" stroke-width="1.5" fill="none" stroke-dasharray="4 3" marker-end="url(#arrowG)"/>
+  <rect x="420" y="52" width="80" height="30" rx="6" fill="#ecfdf5" stroke="#10b981" stroke-width="1.5"/>
+  <text x="460" y="72" font-family="monospace" font-size="13" font-weight="600" fill="#10b981" text-anchor="middle">53.02</text>
+  <text x="460" y="44" font-family="system-ui" font-size="9" fill="#10b981" text-anchor="middle" font-weight="600">AUTO-FILLED</text>
+  <defs>
+    <marker id="arrowG" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M 0 0 L 8 4 L 0 8" fill="none" stroke="#10b981" stroke-width="1.5"/>
+    </marker>
+    <filter id="shadow" x="-4" y="-2" width="108%" height="116%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.1"/>
+    </filter>
+  </defs>
+</svg>

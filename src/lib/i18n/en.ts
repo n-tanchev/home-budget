@@ -9,11 +9,13 @@ export const en = {
     update: 'Update',
     add: 'Add',
     delete: 'Delete',
+    confirm: 'Confirm',
     name: 'Name',
     target: 'Target',
     actual: 'Actual',
     total: 'Total',
     noData: 'No data',
+    allUsers: 'All users',
   },
 
   auth: {
@@ -38,6 +40,119 @@ export const en = {
     monthly: 'Monthly',
     yearly: 'Yearly',
     settings: 'Settings',
+    help: 'Help',
+  },
+
+  help: {
+    title: 'How to Use HomeBudget',
+    gettingStarted: 'Getting Started',
+    gettingStartedDesc: 'HomeBudget is a family finance tracker. Sign in with Google to start. All data is synced in real-time via Firebase, so multiple family members can use the app simultaneously.',
+
+    // Data sections
+    dataSectionsTitle: 'Data Sections',
+    dataSectionsDesc: 'Each month is organized into four main data sections. Understanding what goes where is key to accurate tracking.',
+    incomeTitle: 'Income',
+    incomeDesc: 'Income represents all money coming in during the month. Each entry has a name and an amount. Examples: salaries, freelance payments, vouchers, rental income, dividends, tax refunds. The total income is the sum of all entries.',
+    debtTitle: 'Debt & Loans',
+    debtDesc: 'Debt tracks regular loan and debt repayments you make each month. Each entry has a name and an amount. Examples: mortgage payments, car leasing, personal loans, credit card payments. These are fixed obligations — they are subtracted from your income when calculating net balance.',
+    billsTitle: 'Bills & Subscriptions',
+    billsDesc: 'Bills are recurring payments for services and utilities. Each entry has a name, a category, and an amount. Categories (e.g., Electricity, Internet, Phone, Services) help you organize and analyze your bills. Examples: electricity, water, heating, internet, phone plans, streaming subscriptions, insurance. Bills are separate from expenses because they are predictable and recurring.',
+    expensesTitle: 'Expenses',
+    expensesDesc: 'Expenses are day-to-day variable spending. Each entry has a name, a category, a date, and an amount. The date records when the expense happened, and the "added by" field automatically tracks which family member created it. Categories (e.g., Groceries, Car, Shopping, Restaurants) let you analyze where your money goes. Examples: grocery shopping, fuel, dining out, clothing, gifts, repairs.',
+    netBalanceTitle: 'Net Balance',
+    netBalanceDesc: 'The net balance is calculated as: Income - Expenses - Bills - Debt - Savings - Investments. A positive net balance means you have money left over. A negative net balance means you spent more than you earned.',
+
+    // Monthly view
+    monthlyViewTitle: 'Monthly View',
+    monthlyViewDesc: 'The Monthly view is the main workspace. Each month has sections for Income, Debt, Bills, and Expenses. The summary bar at the top shows totals for each section and the net balance.',
+    monthSummaryBarTitle: 'Summary Bar',
+    monthSummaryBarDesc: 'The colored cards at the top show: total Income (green), total Expenses (red), total Bills (amber), total Debt (orange), and Net balance (green if positive, red if negative).',
+    monthExpenseBreakdownTitle: 'Expense Breakdown (Pie Chart)',
+    monthExpenseBreakdownDesc: 'This donut chart shows how your expenses are distributed across categories. Each slice represents a category, sized proportionally to the total amount spent in that category during the month. The legend below shows each category with its total amount.',
+    monthBudgetVsSpentTitle: 'Budget vs Spent (Bar Chart)',
+    monthBudgetVsSpentDesc: 'This horizontal bar chart compares your budget to actual spending per category. Each category shows two bars: the grey bar is your set budget, and the purple bar is how much you actually spent. Categories where you spent more than budgeted will have a longer purple bar. Only categories with a budget or spending are shown.',
+    monthUserStatsTitle: 'Expense Statistics by User',
+    monthUserStatsDesc: 'When multiple family members add expenses, this section shows how many expenses each person added and their total amount. This helps track who is spending what.',
+
+    // Inline editing
+    inlineEditingTitle: 'Inline Editing (Spreadsheet-like)',
+    inlineEditingDesc: 'All tables support inline editing — click any cell to edit it directly.',
+    inlineEditingTip1: 'Tab moves to the next column',
+    inlineEditingTip2: 'Enter on the last column saves the row and focuses the add row for quick entry',
+    inlineEditingTip3: 'Changes are saved automatically when you click away (on blur)',
+    inlineEditingTip4: 'The bottom row (with placeholders) is for adding new entries',
+    autoSuggestTitle: 'Auto-Suggest',
+    autoSuggestDesc: 'When adding new entries, the name field suggests names from previous months. Selecting a suggestion auto-fills the amount (and category for bills/expenses) from the last known value.',
+    copyTitle: 'Copy from Previous Month',
+    copyDesc: 'Use the "Copy from previous" button to copy income, debt, bills, budgets, savings, and investment entries from the previous month with their actual values. This is useful for recurring entries that stay the same month to month (e.g., salary, mortgage, subscriptions).',
+
+    // Budgets & savings
+    budgetsTitle: 'Budgets',
+    budgetsDesc: 'Set monthly budgets per expense category. Click "Edit budgets" to set a target amount for each category. The Budget vs Actual section then shows progress bars — green means you are within budget, red means you exceeded it. The difference is shown as a +/- amount. Budgets only apply to expense categories, not bills.',
+    savingsTitle: 'Savings & Investments',
+    savingsDesc: 'Track monthly savings and investment goals. Each has a Target (how much you plan to save/invest) and Actual (how much you actually did). The progress bar shows how close you are to your target. Savings and investments are subtracted from income when calculating your net balance, so setting aside money is treated as an outflow.',
+
+    // Dashboard
+    dashboardTitle: 'Dashboard',
+    dashboardDesc: 'The Dashboard gives you a bird\'s-eye view of the selected year. Click any month card at the bottom to navigate to its detailed view.',
+    dashboardCurrentMonthTitle: 'Current Month Snapshot',
+    dashboardCurrentMonthDesc: 'When viewing the current year, a highlighted card shows this month\'s income, expenses, bills, debt, and net balance at a glance.',
+    dashboardSummaryCardsTitle: 'Year Summary Cards',
+    dashboardSummaryCardsDesc: 'Four cards show yearly totals: Total Income (sum of all income across 12 months), Total Expenses (sum of all expenses), Bills & Utilities (sum of all bills), and Net Balance (Income - Expenses - Bills - Debt).',
+    dashboardMonthlyOverviewTitle: 'Monthly Overview (Bar Chart)',
+    dashboardMonthlyOverviewDesc: 'This grouped bar chart shows three bars per month: green for Income, red for Expenses, and amber for Bills. It lets you visually compare income vs outflow across the year. Click an income bar to navigate to that month. Values on the Y axis are shown in thousands (e.g., €3k).',
+    dashboardCategoryPieTitle: 'Expenses by Category (Pie Chart)',
+    dashboardCategoryPieDesc: 'This donut chart shows the total spending per expense category across the entire year. The top 6 categories are listed in the legend with their total amounts. It answers the question: where does most of the money go?',
+    dashboardSavingsTitle: 'Savings & Investments Progress',
+    dashboardSavingsDesc: 'Two cards show cumulative savings and investment progress for the year: the total target (sum of all monthly targets), the actual amount (sum of all monthly actuals), and a progress bar showing the percentage achieved.',
+    dashboardDebtTitle: 'Total Debt Paid',
+    dashboardDebtDesc: 'Shows the total debt payments made during the year and the monthly average (total divided by the number of months that have data).',
+    dashboardMonthlyGridTitle: 'Monthly Summary Grid',
+    dashboardMonthlyGridDesc: 'A grid of 12 month cards showing a quick summary for each: income (+), outflow (-), and net. Empty months show "No data". Click any card to navigate to that month.',
+
+    // Yearly view
+    yearlyTitle: 'Yearly View',
+    yearlyDesc: 'The Yearly view provides detailed analytics with multiple charts. You can optionally compare with a previous year.',
+    yearTotalsTitle: 'Year Totals',
+    yearTotalsDesc: 'Four summary cards show: Income, Expenses + Bills, Debt Payments, and Net Balance. When comparing years, each card also shows the comparison year\'s value.',
+    yearMonthlyChartTitle: 'Monthly Income vs Outflow (Bar Chart)',
+    yearMonthlyChartDesc: 'Without comparison: shows four bars per month — Income (green), Expenses (red), Bills (amber), Debt (orange). With comparison enabled: shows Income and Outflow (expenses + bills combined) for both years side by side, with the comparison year shown in semi-transparent colors.',
+    yearNetCashFlowTitle: 'Net Cash Flow (Bar Chart)',
+    yearNetCashFlowDesc: 'Shows the net position for each month (Income - Expenses - Bills - Debt). Green bars are months where you earned more than you spent, red bars are months where you overspent. This quickly shows which months were good or bad financially.',
+    yearCumulativeNetTitle: 'Cumulative Net (Area Chart)',
+    yearCumulativeNetDesc: 'Shows the running total of net balance over the year. It starts at January\'s net and adds each subsequent month. A rising line means you are accumulating wealth, a falling line means you are depleting it. The shaded area under the curve helps visualize the trend.',
+    yearSavingsTitle: 'Cumulative Savings: Target vs Actual (Line Chart)',
+    yearSavingsDesc: 'Two lines chart: the dashed grey line shows the cumulative savings target (sum of all monthly targets up to that point), and the solid green line shows the cumulative actual savings. If the green line is above the grey, you are ahead of your savings goal.',
+    yearCategoryPieTitle: 'Expense Categories (Pie Chart)',
+    yearCategoryPieDesc: 'A donut chart showing the total spending per expense category for the entire year, with a legend listing all categories and their totals.',
+    yearMonthlyTableTitle: 'Monthly Breakdown Table',
+    yearMonthlyTableDesc: 'A table listing each month\'s Income, Expenses, Bills, and Net, with a bold total row at the bottom. Click any row to navigate to that month. This is the most detailed numeric view of the year.',
+
+    // User filter
+    userFilterTitle: 'User Filter',
+    userFilterDesc: 'When multiple users add expenses, a filter dropdown appears in the Dashboard, Yearly, and Monthly chart sections. Selecting a user filters only the expense data — income, bills, and debt are shared and not affected. This helps answer "how much did each person spend?" The filter shows usernames extracted from email addresses.',
+
+    // Settings
+    settingsTitle: 'Settings',
+    settingsDesc: 'Configure currency (symbol used throughout the app), expense categories (used in expenses and budgets), bill categories (used in bills), and allowed emails (who can sign in). The Data Management section lets you export a full JSON backup or import one. The Danger Zone lets you reset all data.',
+
+    // Keyboard
+    keyboardTitle: 'Keyboard Shortcuts',
+    keyTab: 'Tab',
+    keyTabDesc: 'Move to next cell',
+    keyEnter: 'Enter',
+    keyEnterDesc: 'Move to next column, or save & add new row (on last column)',
+    keyClick: 'Click away',
+    keyClickDesc: 'Save current cell',
+
+    // Tips
+    tipsTitle: 'Tips',
+    tip1: 'Use the Copy feature at the start of each month to bring over recurring income, bills, and debts.',
+    tip2: 'Set budgets per category to track spending limits.',
+    tip3: 'The user filter on charts helps see who spent what.',
+    tip4: 'Export JSON backups regularly from Settings.',
+    tip5: 'Bills are for predictable recurring payments (utilities, subscriptions). Expenses are for variable day-to-day spending.',
+    tip6: 'The net balance includes savings and investments as outflows — money set aside still counts as spent for budgeting purposes.',
   },
 
   months: {
@@ -100,9 +215,6 @@ export const en = {
     billsTitle: 'Bills & Subscriptions',
     expensesTitle: 'Expenses',
     budgetVsActual: 'Budget vs Actual',
-    expected: 'Expected',
-    estimated: 'Estimated',
-    est: 'Est.',
     category: 'Category',
     date: 'Date',
     amount: 'Amount',
@@ -132,7 +244,7 @@ export const en = {
     expenseNamePlaceholder: 'e.g. Lidl',
     amountPlaceholder: '0.00',
     copyFromPreviousTitle: 'Copy from Previous Month',
-    copyDescription: 'Select which sections to copy from {from} to {to}. Amounts will be reset to 0 for actual values.',
+    copyDescription: 'Select which sections to copy from {from} to {to}. Values will be copied with their current amounts.',
     copyIncomeEntries: 'Income entries',
     copyDebtEntries: 'Debt entries',
     copyBillsSubscriptions: 'Bills & subscriptions',
@@ -140,6 +252,12 @@ export const en = {
     copySavingsTarget: 'Savings target',
     copyInvestmentTarget: 'Investment target',
     copySelected: 'Copy selected',
+    confirmDeleteTitle: 'Confirm Delete',
+    confirmDeleteMessage: 'Are you sure you want to delete "{name}"? This action cannot be undone.',
+    userStatistics: 'Expense Statistics by User',
+    unknownUser: 'Unknown',
+    expenseSingular: 'expense',
+    expensePlural: 'expenses',
   },
 
   year: {

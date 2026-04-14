@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/main.tsx","./src/vite-env.d.ts","./src/lib/firebase.ts","./src/lib/store.tsx","./src/lib/types.ts","./src/lib/utils.ts","./src/lib/i18n/bg.ts","./src/lib/i18n/en.ts","./src/lib/i18n/index.tsx","./src/pages/dashboard.tsx","./src/pages/monthview.tsx","./src/pages/settings.tsx","./src/pages/yearview.tsx"],"version":"5.7.3"}

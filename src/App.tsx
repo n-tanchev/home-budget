@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Routes, Route, NavLink, Navigate, useNavigate } from 'react-router-dom';
+import { Routes, Route, NavLink, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { StoreProvider, useStore } from './lib/store';
 import { useI18n } from './lib/i18n';
 import {
@@ -13,10 +13,11 @@ import Dashboard from './pages/Dashboard';
 import MonthView from './pages/MonthView';
 import YearView from './pages/YearView';
 import Settings from './pages/Settings';
+import Help from './pages/Help';
 import {
   Wallet, LogOut, Sun, Moon, LayoutDashboard,
   CalendarDays, BarChart3, Settings as SettingsIcon, Menu, X,
-  AlertTriangle, Globe,
+  AlertTriangle, Globe, HelpCircle,
 } from 'lucide-react';
 import { cn } from './lib/utils';
 
@@ -172,6 +173,7 @@ function getNavItems(t: (key: string) => string) {
     { to: `/month/${new Date().getFullYear()}/${new Date().getMonth() + 1}`, label: t('nav.monthly'), icon: CalendarDays },
     { to: `/yearly/${new Date().getFullYear()}`, label: t('nav.yearly'), icon: BarChart3 },
     { to: '/settings', label: t('nav.settings'), icon: SettingsIcon },
+    { to: '/help', label: t('nav.help'), icon: HelpCircle },
   ];
 }
 
@@ -272,9 +274,10 @@ function AppShell({ user, onLogout }: { user: { email: string; name: string }; o
             <Routes>
               <Route path="/" element={<DashboardPage />} />
               <Route path="/year/:year" element={<DashboardPage />} />
-              <Route path="/month/:year/:month" element={<MonthPage />} />
+              <Route path="/month/:year/:month" element={<MonthPage userEmail={user.email} />} />
               <Route path="/yearly/:year" element={<YearPage />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/help" element={<Help />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </StoreLoadingGate>
@@ -286,45 +289,43 @@ function AppShell({ user, onLogout }: { user: { email: string; name: string }; o
 
 function DashboardPage() {
   const navigate = useNavigate();
+  const params = useParams<{ year: string }>();
   const now = new Date();
-  const [selectedYear, setSelectedYear] = useState(now.getFullYear());
+  const selectedYear = Number(params.year) || now.getFullYear();
 
   const handleNavigateToMonth = useCallback((year: number, month: number) => {
     navigate(`/month/${year}/${month}`);
+  }, [navigate]);
+
+  const handleYearChange = useCallback((year: number) => {
+    navigate(`/year/${year}`, { replace: true });
   }, [navigate]);
 
   return (
     <Dashboard
       selectedYear={selectedYear}
       onNavigateToMonth={handleNavigateToMonth}
-      onYearChange={setSelectedYear}
+      onYearChange={handleYearChange}
     />
   );
 }
 
-function MonthPage() {
+function MonthPage({ userEmail }: { userEmail: string }) {
   const navigate = useNavigate();
+  const params = useParams<{ year: string; month: string }>();
   const now = new Date();
-  const [year, setYear] = useState(now.getFullYear());
-  const [month, setMonth] = useState(now.getMonth() + 1);
+  const year = Number(params.year) || now.getFullYear();
+  const month = Number(params.month) || (now.getMonth() + 1);
 
   const handleMonthChange = useCallback((m: number) => {
-    if (m < 1) {
-      setYear((y) => y - 1);
-      setMonth(12);
-      navigate(`/month/${year - 1}/12`, { replace: true });
-    } else if (m > 12) {
-      setYear((y) => y + 1);
-      setMonth(1);
-      navigate(`/month/${year + 1}/1`, { replace: true });
-    } else {
-      setMonth(m);
-      navigate(`/month/${year}/${m}`, { replace: true });
-    }
+    let newYear = year;
+    let newMonth = m;
+    if (m < 1) { newYear = year - 1; newMonth = 12; }
+    else if (m > 12) { newYear = year + 1; newMonth = 1; }
+    navigate(`/month/${newYear}/${newMonth}`, { replace: true });
   }, [navigate, year]);
 
   const handleYearChange = useCallback((y: number) => {
-    setYear(y);
     navigate(`/month/${y}/${month}`, { replace: true });
   }, [navigate, month]);
 
@@ -334,17 +335,18 @@ function MonthPage() {
       month={month}
       onMonthChange={handleMonthChange}
       onYearChange={handleYearChange}
+      userEmail={userEmail}
     />
   );
 }
 
 function YearPage() {
   const navigate = useNavigate();
+  const params = useParams<{ year: string }>();
   const now = new Date();
-  const [year, setYear] = useState(now.getFullYear());
+  const year = Number(params.year) || now.getFullYear();
 
   const handleYearChange = useCallback((y: number) => {
-    setYear(y);
     navigate(`/yearly/${y}`, { replace: true });
   }, [navigate]);
 

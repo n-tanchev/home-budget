@@ -1,15 +1,14 @@
-import { useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useStore } from '@/lib/store';
-import { getMonthKey } from '@/lib/types';
 import { useI18n, useMonthNames } from '@/lib/i18n';
 import { formatCurrency, getCategoryColor, cn } from '@/lib/utils';
 import {
   TrendingUp, TrendingDown, Wallet, PiggyBank, Landmark, CreditCard,
-  ArrowUpRight, ArrowDownRight, ChevronLeft, ChevronRight,
+  ChevronLeft, ChevronRight, Users,
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area,
+  ResponsiveContainer, PieChart, Pie, Cell,
 } from 'recharts';
 
 interface Props {
@@ -24,6 +23,18 @@ export default function Dashboard({ selectedYear, onNavigateToMonth, onYearChang
   const { monthsShort } = useMonthNames();
   const sym = state.settings.currencySymbol;
 
+  // ─── User filter ────────────────────────────────────────────
+  const [filterUser, setFilterUser] = useState('');
+
+  const allUsers = useMemo(() => {
+    const users = new Set<string>();
+    for (let m = 1; m <= 12; m++) {
+      const md = getMonthData(selectedYear, m);
+      md.expenses.forEach((e) => { if (e.addedBy) users.add(e.addedBy); });
+    }
+    return [...users].sort();
+  }, [selectedYear, getMonthData]);
+
   const yearData = useMemo(() => {
     const data = [];
     let totalIncome = 0, totalExpense = 0, totalBills = 0, totalDebt = 0;
@@ -32,8 +43,9 @@ export default function Dashboard({ selectedYear, onNavigateToMonth, onYearChang
 
     for (let m = 1; m <= 12; m++) {
       const md = getMonthData(selectedYear, m);
+      const expenses = filterUser ? md.expenses.filter((e) => e.addedBy === filterUser) : md.expenses;
       const income = md.incomes.reduce((s, i) => s + i.actual, 0);
-      const expense = md.expenses.reduce((s, e) => s + e.amount, 0);
+      const expense = expenses.reduce((s, e) => s + e.amount, 0);
       const bills = md.bills.reduce((s, b) => s + b.actual, 0);
       const debt = md.debts.reduce((s, d) => s + d.actual, 0);
 
@@ -70,54 +82,73 @@ export default function Dashboard({ selectedYear, onNavigateToMonth, onYearChang
       totalInvestActual,
       net: totalIncome - totalExpense - totalBills - totalDebt,
     };
-  }, [selectedYear, getMonthData, monthsShort]);
+  }, [selectedYear, getMonthData, monthsShort, filterUser]);
 
   // Category breakdown for the year
   const categoryBreakdown = useMemo(() => {
     const map: Record<string, number> = {};
     for (let m = 1; m <= 12; m++) {
       const md = getMonthData(selectedYear, m);
-      md.expenses.forEach((e) => {
+      const expenses = filterUser ? md.expenses.filter((e) => e.addedBy === filterUser) : md.expenses;
+      expenses.forEach((e) => {
         map[e.category] = (map[e.category] || 0) + e.amount;
       });
     }
     return Object.entries(map)
-      .map(([category, amount], i) => ({
+      .map(([category, amount]) => ({
         category,
         amount,
         color: getCategoryColor(state.settings.expenseCategories.indexOf(category)),
       }))
       .sort((a, b) => b.amount - a.amount);
-  }, [selectedYear, getMonthData, state.settings.expenseCategories]);
+  }, [selectedYear, getMonthData, state.settings.expenseCategories, filterUser]);
 
   // Current month
   const now = new Date();
   const currentMonthData = getMonthData(now.getFullYear(), now.getMonth() + 1);
+  const currentExpenses = filterUser ? currentMonthData.expenses.filter((e) => e.addedBy === filterUser) : currentMonthData.expenses;
   const currentIncome = currentMonthData.incomes.reduce((s, i) => s + i.actual, 0);
-  const currentExpense = currentMonthData.expenses.reduce((s, e) => s + e.amount, 0);
+  const currentExpense = currentExpenses.reduce((s, e) => s + e.amount, 0);
   const currentBills = currentMonthData.bills.reduce((s, b) => s + b.actual, 0);
   const currentDebt = currentMonthData.debts.reduce((s, d) => s + d.actual, 0);
   const currentNet = currentIncome - currentExpense - currentBills - currentDebt;
 
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* Year selector */}
-      <div className="flex items-center justify-between">
+      {/* Year selector + user filter */}
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <h1 className="text-2xl font-bold tracking-tight">{t('dashboard.title')}</h1>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => onYearChange(selectedYear - 1)}
-            className="p-2 rounded-lg hover:bg-secondary transition-colors"
-          >
-            <ChevronLeft size={18} />
-          </button>
-          <span className="text-lg font-bold mono min-w-[4ch] text-center">{selectedYear}</span>
-          <button
-            onClick={() => onYearChange(selectedYear + 1)}
-            className="p-2 rounded-lg hover:bg-secondary transition-colors"
-          >
-            <ChevronRight size={18} />
-          </button>
+        <div className="flex items-center gap-3">
+          {allUsers.length > 1 && (
+            <div className="flex items-center gap-1.5">
+              <Users size={14} className="text-muted-foreground" />
+              <select
+                value={filterUser}
+                onChange={(e) => setFilterUser(e.target.value)}
+                className="px-2 py-1 rounded-lg border border-input bg-background text-sm"
+              >
+                <option value="">{t('common.allUsers')}</option>
+                {allUsers.map((u) => (
+                  <option key={u} value={u}>{u.split('@')[0]}</option>
+                ))}
+              </select>
+            </div>
+          )}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => onYearChange(selectedYear - 1)}
+              className="p-2 rounded-lg hover:bg-secondary transition-colors"
+            >
+              <ChevronLeft size={18} />
+            </button>
+            <span className="text-lg font-bold mono min-w-[4ch] text-center">{selectedYear}</span>
+            <button
+              onClick={() => onYearChange(selectedYear + 1)}
+              className="p-2 rounded-lg hover:bg-secondary transition-colors"
+            >
+              <ChevronRight size={18} />
+            </button>
+          </div>
         </div>
       </div>
 

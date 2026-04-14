@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 130" fill="none">
+  <rect width="520" height="130" rx="8" fill="#f8f9fa"/>
+  <!-- Filter dropdown -->
+  <rect x="20" y="15" width="140" height="32" rx="6" fill="white" stroke="#dee2e6" stroke-width="1.5"/>
+  <circle cx="38" cy="31" r="8" fill="#eef2ff" stroke="#6366f1" stroke-width="1"/>
+  <circle cx="38" cy="29" r="3" fill="#6366f1"/>
+  <path d="M 33 33 L 43 33" stroke="#6366f1" stroke-width="1.5"/>
+  <text x="55" y="35" font-family="system-ui" font-size="12" fill="#495057">nikolay</text>
+  <path d="M 140 28 L 148 34 L 132 34 Z" fill="#6c757d"/>
+  <!-- Pie chart simplified -->
+  <circle cx="320" cy="65" r="45" fill="none" stroke="#e9ecef" stroke-width="20"/>
+  <circle cx="320" cy="65" r="45" fill="none" stroke="#6366f1" stroke-width="20" stroke-dasharray="100 183" stroke-dashoffset="0" transform="rotate(-90 320 65)"/>
+  <circle cx="320" cy="65" r="45" fill="none" stroke="#ec4899" stroke-width="20" stroke-dasharray="60 223" stroke-dashoffset="-100" transform="rotate(-90 320 65)"/>
+  <circle cx="320" cy="65" r="45" fill="none" stroke="#f59e0b" stroke-width="20" stroke-dasharray="40 243" stroke-dashoffset="-160" transform="rotate(-90 320 65)"/>
+  <!-- Legend -->
+  <rect x="400" y="30" width="10" height="10" rx="2" fill="#6366f1"/>
+  <text x="416" y="39" font-family="system-ui" font-size="11" fill="#6c757d">Groceries</text>
+  <rect x="400" y="50" width="10" height="10" rx="2" fill="#ec4899"/>
+  <text x="416" y="59" font-family="system-ui" font-size="11" fill="#6c757d">Car</text>
+  <rect x="400" y="70" width="10" height="10" rx="2" fill="#f59e0b"/>
+  <text x="416" y="79" font-family="system-ui" font-size="11" fill="#6c757d">Shopping</text>
+  <!-- Label -->
+  <text x="20" y="80" font-family="system-ui" font-size="11" fill="#6c757d">Showing expenses</text>
+  <text x="20" y="95" font-family="system-ui" font-size="11" fill="#6c757d">for</text>
+  <text x="38" y="95" font-family="system-ui" font-size="11" fill="#6366f1" font-weight="600">nikolay</text>
+  <text x="78" y="95" font-family="system-ui" font-size="11" fill="#6c757d">only</text>
+</svg>

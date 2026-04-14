@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 120" fill="none">
+  <rect width="520" height="120" rx="8" fill="#f8f9fa"/>
+  <!-- Tab key -->
+  <rect x="20" y="15" width="60" height="32" rx="6" fill="white" stroke="#dee2e6" stroke-width="1.5"/>
+  <text x="50" y="35" font-family="monospace" font-size="12" font-weight="700" fill="#495057" text-anchor="middle">Tab</text>
+  <text x="100" y="35" font-family="system-ui" font-size="12" fill="#6c757d">Move to next column</text>
+  <!-- Arrow -->
+  <path d="M 320 31 L 350 31" stroke="#6366f1" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <rect x="355" y="18" width="50" height="26" rx="4" fill="#eef2ff" stroke="#6366f1" stroke-width="1"/>
+  <text x="380" y="35" font-family="system-ui" font-size="10" fill="#6366f1" text-anchor="middle">Next</text>
+  <!-- Enter key -->
+  <rect x="20" y="60" width="60" height="32" rx="6" fill="white" stroke="#dee2e6" stroke-width="1.5"/>
+  <text x="50" y="80" font-family="monospace" font-size="11" font-weight="700" fill="#495057" text-anchor="middle">Enter</text>
+  <text x="100" y="80" font-family="system-ui" font-size="12" fill="#6c757d">Save row &amp; add new</text>
+  <!-- Plus icon -->
+  <rect x="355" y="63" width="50" height="26" rx="4" fill="#ecfdf5" stroke="#10b981" stroke-width="1"/>
+  <text x="380" y="80" font-family="system-ui" font-size="10" fill="#10b981" text-anchor="middle">+ New</text>
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M 0 0 L 8 4 L 0 8" fill="none" stroke="#6366f1" stroke-width="1.5"/>
+    </marker>
+  </defs>
+</svg>

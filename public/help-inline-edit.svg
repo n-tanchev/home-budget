@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 160" fill="none">
+  <rect width="520" height="160" rx="8" fill="#f8f9fa"/>
+  <!-- Header row -->
+  <rect x="0" y="0" width="520" height="32" rx="8" fill="#e9ecef"/>
+  <rect x="0" y="24" width="520" height="8" fill="#e9ecef"/>
+  <text x="16" y="21" font-family="system-ui" font-size="11" font-weight="600" fill="#6c757d">Name</text>
+  <text x="310" y="21" font-family="system-ui" font-size="11" font-weight="600" fill="#6c757d">Category</text>
+  <text x="430" y="21" font-family="system-ui" font-size="11" font-weight="600" fill="#6c757d" text-anchor="end">Amount</text>
+  <line x1="280" y1="0" x2="280" y2="32" stroke="#dee2e6" stroke-width="1"/>
+  <line x1="380" y1="0" x2="380" y2="32" stroke="#dee2e6" stroke-width="1"/>
+  <line x1="460" y1="0" x2="460" y2="32" stroke="#dee2e6" stroke-width="1"/>
+  <!-- Row 1 -->
+  <rect x="0" y="32" width="520" height="36" fill="white"/>
+  <text x="16" y="55" font-family="system-ui" font-size="13" fill="#212529">Electricity</text>
+  <text x="296" y="55" font-family="system-ui" font-size="12" fill="#495057">Utilities</text>
+  <text x="445" y="55" font-family="monospace" font-size="13" font-weight="600" fill="#f59e0b" text-anchor="end">53.02</text>
+  <line x1="280" y1="32" x2="280" y2="68" stroke="#dee2e6" stroke-width="1"/>
+  <line x1="380" y1="32" x2="380" y2="68" stroke="#dee2e6" stroke-width="1"/>
+  <line x1="460" y1="32" x2="460" y2="68" stroke="#dee2e6" stroke-width="1"/>
+  <line x1="0" y1="68" x2="520" y2="68" stroke="#dee2e6" stroke-width="1"/>
+  <!-- Row 2 - active/focused -->
+  <rect x="0" y="68" width="520" height="36" fill="#f0f4ff"/>
+  <rect x="1" y="69" width="278" height="34" rx="0" fill="white" stroke="#6366f1" stroke-width="2"/>
+  <text x="16" y="91" font-family="system-ui" font-size="13" fill="#212529">Internet|</text>
+  <text x="296" y="91" font-family="system-ui" font-size="12" fill="#495057">Internet</text>
+  <text x="445" y="91" font-family="monospace" font-size="13" font-weight="600" fill="#f59e0b" text-anchor="end">14.32</text>
+  <line x1="280" y1="68" x2="280" y2="104" stroke="#dee2e6" stroke-width="1"/>
+  <line x1="380" y1="68" x2="380" y2="104" stroke="#dee2e6" stroke-width="1"/>
+  <line x1="460" y1="68" x2="460" y2="104" stroke="#dee2e6" stroke-width="1"/>
+  <line x1="0" y1="104" x2="520" y2="104" stroke="#dee2e6" stroke-width="1"/>
+  <!-- Add row -->
+  <rect x="0" y="104" width="520" height="36" fill="#f8f9fa"/>
+  <text x="16" y="127" font-family="system-ui" font-size="12" fill="#adb5bd" font-style="italic">e.g. Electricity</text>
+  <text x="445" y="127" font-family="monospace" font-size="12" fill="#adb5bd" text-anchor="end">0</text>
+  <line x1="280" y1="104" x2="280" y2="140" stroke="#dee2e6" stroke-width="1"/>
+  <line x1="380" y1="104" x2="380" y2="140" stroke="#dee2e6" stroke-width="1"/>
+  <line x1="460" y1="104" x2="460" y2="140" stroke="#dee2e6" stroke-width="1"/>
+  <!-- Total row -->
+  <rect x="0" y="140" width="520" height="20" fill="#e9ecef"/>
+  <rect x="0" y="140" width="520" height="20" rx="0" fill="#e9ecef"/>
+  <rect x="0" y="152" width="8" height="8" fill="#e9ecef" rx="0"/>
+  <rect x="512" y="152" width="8" height="8" fill="#e9ecef" rx="0"/>
+  <rect x="0" y="152" width="520" height="8" rx="8" fill="#e9ecef"/>
+  <text x="445" y="155" font-family="monospace" font-size="12" font-weight="700" fill="#f59e0b" text-anchor="end">67.34</text>
+  <!-- Delete icons -->
+  <circle cx="490" cy="50" r="10" fill="none" stroke="#fee2e2" stroke-width="1.5"/>
+  <line x1="486" y1="46" x2="494" y2="54" stroke="#ef4444" stroke-width="1.5"/>
+  <line x1="494" y1="46" x2="486" y2="54" stroke="#ef4444" stroke-width="1.5"/>
+  <circle cx="490" cy="86" r="10" fill="none" stroke="#fee2e2" stroke-width="1.5"/>
+  <line x1="486" y1="82" x2="494" y2="90" stroke="#ef4444" stroke-width="1.5"/>
+  <line x1="494" y1="82" x2="486" y2="90" stroke="#ef4444" stroke-width="1.5"/>
+  <!-- Focus indicator label -->
+  <rect x="100" y="72" width="80" height="18" rx="4" fill="#6366f1"/>
+  <text x="140" y="84" font-family="system-ui" font-size="9" fill="white" text-anchor="middle" font-weight="600">EDITING</text>
+</svg>

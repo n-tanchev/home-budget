@@ -173,3 +173,17 @@ src/
 ## License
 
 MIT
+
+
+```shell
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /budgets/{docId} {
+      allow read, write: if request.auth != null
+        && request.auth.token.email in ['nikolay.g.tanchev@gmail.com', 'ntanchev@speed.bg', 'mihaela.r.ivanova@gmail.com'];
+    }
+  }
+}
+
+```

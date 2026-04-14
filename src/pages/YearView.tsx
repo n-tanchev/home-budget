@@ -3,7 +3,8 @@ import { useStore } from '@/lib/store';
 import { getMonthKey } from '@/lib/types';
 import { useI18n, useMonthNames } from '@/lib/i18n';
 import { formatCurrency, getCategoryColor, cn } from '@/lib/utils';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Users } from 'lucide-react';
+// Types already use only 'actual' fields - no expected/estimated
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   LineChart, Line, AreaChart, Area, PieChart, Pie, Cell, Legend,
@@ -24,6 +25,18 @@ export default function YearView({ year, onYearChange, onNavigateToMonth }: Prop
   const [compareYear, setCompareYear] = useState(year - 1);
   const [showCompare, setShowCompare] = useState(false);
 
+  // ─── User filter ────────────────────────────────────────────
+  const [filterUser, setFilterUser] = useState('');
+
+  const allUsers = useMemo(() => {
+    const users = new Set<string>();
+    for (let m = 1; m <= 12; m++) {
+      const md = getMonthData(year, m);
+      md.expenses.forEach((e) => { if (e.addedBy) users.add(e.addedBy); });
+    }
+    return [...users].sort();
+  }, [year, getMonthData]);
+
   const buildYearData = (y: number) => {
     const monthly = [];
     let totalIncome = 0, totalExpense = 0, totalBills = 0, totalDebt = 0;
@@ -32,8 +45,9 @@ export default function YearView({ year, onYearChange, onNavigateToMonth }: Prop
 
     for (let m = 1; m <= 12; m++) {
       const md = getMonthData(y, m);
+      const expenses = filterUser ? md.expenses.filter((e) => e.addedBy === filterUser) : md.expenses;
       const income = md.incomes.reduce((s, i) => s + i.actual, 0);
-      const expense = md.expenses.reduce((s, e) => s + e.amount, 0);
+      const expense = expenses.reduce((s, e) => s + e.amount, 0);
       const bills = md.bills.reduce((s, b) => s + b.actual, 0);
       const debt = md.debts.reduce((s, d) => s + d.actual, 0);
 
@@ -41,7 +55,7 @@ export default function YearView({ year, onYearChange, onNavigateToMonth }: Prop
       totalSavingsT += md.savings.target; totalSavingsA += md.savings.actual;
       totalInvestT += md.investments.target; totalInvestA += md.investments.actual;
 
-      md.expenses.forEach((e) => { categoryTotals[e.category] = (categoryTotals[e.category] || 0) + e.amount; });
+      expenses.forEach((e) => { categoryTotals[e.category] = (categoryTotals[e.category] || 0) + e.amount; });
 
       monthly.push({
         month: monthsShort[m - 1], monthNum: m,
@@ -60,8 +74,8 @@ export default function YearView({ year, onYearChange, onNavigateToMonth }: Prop
     return { monthly, totalIncome, totalExpense, totalBills, totalDebt, totalSavingsT, totalSavingsA, totalInvestT, totalInvestA, categories };
   };
 
-  const data = useMemo(() => buildYearData(year), [year, getMonthData, monthsShort]);
-  const compData = useMemo(() => showCompare ? buildYearData(compareYear) : null, [showCompare, compareYear, getMonthData, monthsShort]);
+  const data = useMemo(() => buildYearData(year), [year, getMonthData, monthsShort, filterUser]);
+  const compData = useMemo(() => showCompare ? buildYearData(compareYear) : null, [showCompare, compareYear, getMonthData, monthsShort, filterUser]);
 
   // Combined data for comparison chart
   const comparisonData = useMemo(() => {
@@ -105,7 +119,7 @@ export default function YearView({ year, onYearChange, onNavigateToMonth }: Prop
 
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* Year selector */}
+      {/* Year selector + user filter */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-3">
           <button onClick={() => onYearChange(year - 1)} className="p-2 rounded-lg hover:bg-secondary transition-colors">
@@ -116,7 +130,22 @@ export default function YearView({ year, onYearChange, onNavigateToMonth }: Prop
             <ChevronRight size={18} />
           </button>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3 flex-wrap">
+          {allUsers.length > 1 && (
+            <div className="flex items-center gap-1.5">
+              <Users size={14} className="text-muted-foreground" />
+              <select
+                value={filterUser}
+                onChange={(e) => setFilterUser(e.target.value)}
+                className="px-2 py-1 rounded-lg border border-input bg-background text-sm"
+              >
+                <option value="">{t('common.allUsers')}</option>
+                {allUsers.map((u) => (
+                  <option key={u} value={u}>{u.split('@')[0]}</option>
+                ))}
+              </select>
+            </div>
+          )}
           <label className="flex items-center gap-2 text-sm cursor-pointer">
             <input
               type="checkbox"

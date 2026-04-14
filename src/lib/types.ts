@@ -1,14 +1,12 @@
 export interface Income {
   id: string;
   name: string;
-  expected: number;
   actual: number;
 }
 
 export interface Debt {
   id: string;
   name: string;
-  estimated: number;
   actual: number;
 }
 
@@ -16,7 +14,6 @@ export interface Bill {
   id: string;
   name: string;
   category: string;
-  estimated: number;
   actual: number;
 }
 
@@ -26,6 +23,7 @@ export interface Expense {
   category: string;
   date: string; // YYYY-MM-DD
   amount: number;
+  addedBy: string; // user email who added this expense
 }
 
 export interface CategoryBudget {
