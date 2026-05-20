@@ -14,10 +14,11 @@ import MonthView from './pages/MonthView';
 import YearView from './pages/YearView';
 import Settings from './pages/Settings';
 import Help from './pages/Help';
+import Projects, { ProjectDetail } from './pages/Projects';
 import {
   Wallet, LogOut, Sun, Moon, LayoutDashboard,
   CalendarDays, BarChart3, Settings as SettingsIcon, Menu, X,
-  AlertTriangle, Globe, HelpCircle,
+  AlertTriangle, Globe, HelpCircle, Briefcase,
 } from 'lucide-react';
 import { cn } from './lib/utils';
 
@@ -172,6 +173,7 @@ function getNavItems(t: (key: string) => string) {
     { to: '/', label: t('nav.dashboard'), icon: LayoutDashboard },
     { to: `/month/${new Date().getFullYear()}/${new Date().getMonth() + 1}`, label: t('nav.monthly'), icon: CalendarDays },
     { to: `/yearly/${new Date().getFullYear()}`, label: t('nav.yearly'), icon: BarChart3 },
+    { to: '/projects', label: t('nav.projects'), icon: Briefcase },
     { to: '/settings', label: t('nav.settings'), icon: SettingsIcon },
     { to: '/help', label: t('nav.help'), icon: HelpCircle },
   ];
@@ -276,6 +278,8 @@ function AppShell({ user, onLogout }: { user: { email: string; name: string }; o
               <Route path="/year/:year" element={<DashboardPage />} />
               <Route path="/month/:year/:month" element={<MonthPage userEmail={user.email} />} />
               <Route path="/yearly/:year" element={<YearPage />} />
+              <Route path="/projects" element={<Projects />} />
+              <Route path="/projects/:id" element={<ProjectDetail userEmail={user.email} />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/help" element={<Help />} />
               <Route path="*" element={<Navigate to="/" replace />} />

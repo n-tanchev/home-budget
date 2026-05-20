@@ -21,7 +21,7 @@ import {
   writeBatch,
   type Unsubscribe,
 } from 'firebase/firestore';
-import type { AppState, MonthData, AppSettings } from './types';
+import type { AppState, MonthData, AppSettings, Project } from './types';
 import { emptyMonthData } from './types';
 import { generateId } from './utils';
 
@@ -120,14 +120,18 @@ function sanitizeMonthData(data: Record<string, unknown>): MonthData {
       category: (b.category as string) || '',
       actual: (b.actual as number) ?? (b.estimated as number) ?? 0,
     })),
-    expenses: (Array.isArray(d.expenses) ? d.expenses : []).map((e: Record<string, unknown>) => ({
-      id: (e.id as string) || generateId(),
-      name: (e.name as string) || '',
-      category: (e.category as string) || '',
-      date: (e.date as string) || '',
-      amount: (e.amount as number) || 0,
-      addedBy: (e.addedBy as string) || '',
-    })),
+    expenses: (Array.isArray(d.expenses) ? d.expenses : []).map((e: Record<string, unknown>) => {
+      const exp: MonthData['expenses'][number] = {
+        id: (e.id as string) || generateId(),
+        name: (e.name as string) || '',
+        category: (e.category as string) || '',
+        date: (e.date as string) || '',
+        amount: (e.amount as number) || 0,
+        addedBy: (e.addedBy as string) || '',
+      };
+      if (e.projectId) exp.projectId = e.projectId as string;
+      return exp;
+    }),
     budgets: Array.isArray(d.budgets) ? d.budgets as MonthData['budgets'] : [],
     savings: (d.savings as MonthData['savings']) || { target: 0, actual: 0 },
     investments: (d.investments as MonthData['investments']) || { target: 0, actual: 0 },
@@ -155,10 +159,11 @@ export async function migrateIfNeeded(): Promise<void> {
     batch.set(monthRef, sanitizeMonthData(monthData));
   }
 
-  // Update main doc: remove months field, keep settings + currentYear
+  // Update main doc: remove months field, keep settings + currentYear + projects
   batch.set(mainRef, {
     settings: data.settings || {},
     currentYear: data.currentYear || new Date().getFullYear(),
+    projects: Array.isArray(data.projects) ? data.projects : [],
   });
 
   await batch.commit();
@@ -183,6 +188,7 @@ export async function initializeData(state: AppState): Promise<void> {
   batch.set(mainRef, {
     settings: state.settings,
     currentYear: state.currentYear,
+    projects: state.projects || [],
   });
 
   // Month subcollection docs
@@ -196,7 +202,7 @@ export async function initializeData(state: AppState): Promise<void> {
 
 // ─── Real-time subscriptions ───────────────────────────────────
 export function subscribeToSettings(
-  callback: (settings: AppSettings | null, currentYear: number) => void
+  callback: (settings: AppSettings | null, currentYear: number, projects: Project[]) => void
 ): Unsubscribe {
   if (!db) return () => {};
   const mainRef = doc(db, 'budgets', budgetDocId);
@@ -205,10 +211,11 @@ export function subscribeToSettings(
       const data = snap.data();
       callback(
         (data.settings as AppSettings) || null,
-        (data.currentYear as number) || new Date().getFullYear()
+        (data.currentYear as number) || new Date().getFullYear(),
+        Array.isArray(data.projects) ? (data.projects as Project[]) : []
       );
     } else {
-      callback(null, new Date().getFullYear());
+      callback(null, new Date().getFullYear(), []);
     }
   });
 }
@@ -389,6 +396,39 @@ export async function saveCurrentYear(year: number): Promise<void> {
   await updateDoc(mainRef, { currentYear: year });
 }
 
+// ─── Project operations ────────────────────────────────────────
+
+export async function addProject(project: Project): Promise<void> {
+  if (!db) return;
+  const mainRef = doc(db, 'budgets', budgetDocId);
+  await runTransaction(db, async (transaction) => {
+    const snap = await transaction.get(mainRef);
+    const current = snap.exists() ? (snap.data().projects as Project[]) || [] : [];
+    transaction.update(mainRef, { projects: [...current, project] });
+  });
+}
+
+export async function updateProject(project: Project): Promise<void> {
+  if (!db) return;
+  const mainRef = doc(db, 'budgets', budgetDocId);
+  await runTransaction(db, async (transaction) => {
+    const snap = await transaction.get(mainRef);
+    const current = snap.exists() ? (snap.data().projects as Project[]) || [] : [];
+    const next = current.map((p) => (p.id === project.id ? project : p));
+    transaction.update(mainRef, { projects: next });
+  });
+}
+
+export async function deleteProject(id: string): Promise<void> {
+  if (!db) return;
+  const mainRef = doc(db, 'budgets', budgetDocId);
+  await runTransaction(db, async (transaction) => {
+    const snap = await transaction.get(mainRef);
+    const current = snap.exists() ? (snap.data().projects as Project[]) || [] : [];
+    transaction.update(mainRef, { projects: current.filter((p) => p.id !== id) });
+  });
+}
+
 // ─── Bulk operations (import/reset) ────────────────────────────
 
 export async function replaceAllData(state: AppState): Promise<void> {
@@ -411,6 +451,7 @@ export async function replaceAllData(state: AppState): Promise<void> {
   batch.set(mainRef, {
     settings: state.settings,
     currentYear: state.currentYear,
+    projects: Array.isArray(state.projects) ? state.projects : [],
   });
 
   await batch.commit();

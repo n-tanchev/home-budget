@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, useMemo } from 'react';
-import type { AppState, MonthData, Income, Debt, Bill, Expense, CategoryBudget, SavingsGoal, AppSettings } from './types';
+import type { AppState, MonthData, Income, Debt, Bill, Expense, CategoryBudget, SavingsGoal, AppSettings, Project } from './types';
 import { emptyMonthData, getMonthKey, DEFAULT_EXPENSE_CATEGORIES, DEFAULT_BILL_CATEGORIES } from './types';
 import { generateId } from './utils';
 import {
@@ -18,6 +18,9 @@ import {
   replaceAllData,
   deleteAllMonths,
   saveSettings,
+  addProject as addProjectFb,
+  updateProject as updateProjectFb,
+  deleteProject as deleteProjectFb,
 } from './firebase';
 
 const defaultSettings: AppSettings = {
@@ -33,6 +36,7 @@ function defaultState(): AppState {
     settings: { ...defaultSettings },
     months: {},
     currentYear: new Date().getFullYear(),
+    projects: [],
   };
 }
 
@@ -127,6 +131,10 @@ interface StoreContextType {
   setInvestments: (year: number, month: number, investments: SavingsGoal) => void;
   // Settings
   updateSettings: (settings: Partial<AppSettings>) => void;
+  // Projects
+  addProject: (project: Omit<Project, 'id' | 'createdAt'>) => void;
+  updateProject: (project: Project) => void;
+  deleteProject: (id: string) => void;
   // Copy previous month
   copyFromPreviousMonth: (year: number, month: number, sections: string[]) => void;
   // Import / export
@@ -141,6 +149,7 @@ export function StoreProvider({ children, uid }: { children: React.ReactNode; ui
   const [settings, setSettings] = useState<AppSettings>({ ...defaultSettings });
   const [months, setMonths] = useState<Record<string, MonthData>>({});
   const [currentYear, setCurrentYearState] = useState(new Date().getFullYear());
+  const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Combined state object for compatibility
@@ -148,7 +157,8 @@ export function StoreProvider({ children, uid }: { children: React.ReactNode; ui
     settings,
     months,
     currentYear,
-  }), [settings, months, currentYear]);
+    projects,
+  }), [settings, months, currentYear, projects]);
 
   // Initialize and subscribe to real-time updates
   useEffect(() => {
@@ -183,10 +193,11 @@ export function StoreProvider({ children, uid }: { children: React.ReactNode; ui
           }
         };
 
-        unsubs.push(subscribeToSettings((s, y) => {
+        unsubs.push(subscribeToSettings((s, y, p) => {
           if (!mounted) return;
           if (s) setSettings(s);
           setCurrentYearState(y);
+          setProjects(p);
           settingsReady = true;
           checkReady();
         }));
@@ -300,6 +311,21 @@ export function StoreProvider({ children, uid }: { children: React.ReactNode; ui
     updateSettingsPartial(partial);
   }, []);
 
+  // ─── Projects ─────────────────────────────────────────────────
+  const addProjectFn = useCallback((project: Omit<Project, 'id' | 'createdAt'>) => {
+    const now = new Date();
+    const createdAt = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    addProjectFb({ ...project, id: generateId(), createdAt });
+  }, []);
+
+  const updateProjectFn = useCallback((project: Project) => {
+    updateProjectFb(project);
+  }, []);
+
+  const deleteProjectFn = useCallback((id: string) => {
+    deleteProjectFb(id);
+  }, []);
+
   // ─── Copy from previous month ────────────────────────────────
   const copyFromPreviousMonth = useCallback(async (year: number, month: number, sections: string[]) => {
     const prevMonth = month === 1 ? 12 : month - 1;
@@ -332,6 +358,7 @@ export function StoreProvider({ children, uid }: { children: React.ReactNode; ui
         addExpense, updateExpense, deleteExpense,
         setBudgets, setSavings, setInvestments,
         updateSettings: updateSettingsFn, copyFromPreviousMonth,
+        addProject: addProjectFn, updateProject: updateProjectFn, deleteProject: deleteProjectFn,
         importState, setCurrentYear: setCurrentYearFn,
       }}
     >

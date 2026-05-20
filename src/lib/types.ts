@@ -24,6 +24,16 @@ export interface Expense {
   date: string; // YYYY-MM-DD
   amount: number;
   addedBy: string; // user email who added this expense
+  projectId?: string; // optional link to a Project
+}
+
+export interface Project {
+  id: string;
+  name: string;
+  totalBudget: number;
+  monthlyBudget?: number; // optional per-month limit
+  archived: boolean;
+  createdAt: string; // YYYY-MM-DD
 }
 
 export interface CategoryBudget {
@@ -58,6 +68,7 @@ export interface AppState {
   settings: AppSettings;
   months: Record<string, MonthData>; // key: "2026-02"
   currentYear: number;
+  projects: Project[];
 }
 
 export interface UserInfo {

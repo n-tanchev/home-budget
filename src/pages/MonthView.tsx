@@ -136,7 +136,7 @@ const cellBase = 'w-full h-9 px-2.5 text-sm bg-transparent rounded-none focus:ou
 // Fixed grid templates — same constant used in row component + section header + add row
 const gridSimple = 'grid-cols-[1fr_120px_36px]';
 const gridBill = 'grid-cols-[1fr_120px_120px_36px]';
-const gridExpense = 'grid-cols-[1fr_120px_140px_120px_36px]';
+const gridExpense = 'grid-cols-[minmax(120px,1fr)_110px_110px_130px_110px_36px]';
 
 // ─── Editable row: Income / Debt (name + amount) ───────────────
 function EditableSimpleRow({ item, onUpdate, onDelete, onEnter, listId, color }: {
@@ -232,8 +232,8 @@ function EditableBillRow({ item, onUpdate, onDelete, onEnter, listId, categories
   );
 }
 
-// ─── Editable row: Expense (name + category + date + amount) ───
-function EditableExpenseRow({ item, onUpdate, onDelete, onEnter, listId, categories, color }: {
+// ─── Editable row: Expense (name + project + category + date + amount) ───
+function EditableExpenseRow({ item, onUpdate, onDelete, onEnter, listId, categories, color, projects }: {
   item: Expense;
   onUpdate: (updated: Expense) => void;
   onDelete: () => void;
@@ -241,11 +241,14 @@ function EditableExpenseRow({ item, onUpdate, onDelete, onEnter, listId, categor
   listId: string;
   categories: string[];
   color: string;
+  projects: { id: string; name: string }[];
 }) {
   const [name, setName] = useState(item.name);
   const [category, setCategory] = useState(item.category);
   const [date, setDate] = useState(item.date);
   const [amount, setAmount] = useState(item.amount ? String(item.amount) : '');
+  const [projectId, setProjectId] = useState(item.projectId || '');
+  const projectRef = useRef<HTMLSelectElement>(null);
   const catRef = useRef<HTMLSelectElement>(null);
   const dateRef = useRef<HTMLInputElement>(null);
   const amountRef = useRef<HTMLInputElement>(null);
@@ -253,8 +256,18 @@ function EditableExpenseRow({ item, onUpdate, onDelete, onEnter, listId, categor
   const save = () => {
     const n = name.trim();
     const a = Number(amount) || 0;
-    if (n !== item.name || category !== item.category || date !== item.date || a !== item.amount) {
-      onUpdate({ ...item, name: n, category, date, amount: a });
+    const pid = projectId || undefined;
+    if (
+      n !== item.name ||
+      category !== item.category ||
+      date !== item.date ||
+      a !== item.amount ||
+      pid !== item.projectId
+    ) {
+      const next: Expense = { ...item, name: n, category, date, amount: a };
+      if (pid) next.projectId = pid;
+      else delete next.projectId;
+      onUpdate(next);
     }
   };
 
@@ -264,12 +277,22 @@ function EditableExpenseRow({ item, onUpdate, onDelete, onEnter, listId, categor
         <input
           value={name} onChange={(e) => setName(e.target.value)} onBlur={save}
           list={listId} className={cn(cellBase, 'min-w-0')}
-          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); catRef.current?.focus(); } }}
+          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); projectRef.current?.focus(); } }}
         />
         {item.addedBy && (
           <span className="text-[10px] text-muted-foreground/60 px-1.5 flex-shrink-0 truncate max-w-[60px]">{item.addedBy.split('@')[0]}</span>
         )}
       </div>
+      <select
+        ref={projectRef} value={projectId}
+        onChange={(e) => setProjectId(e.target.value)}
+        onBlur={save}
+        className={cn(cellBase, 'text-xs cursor-pointer border-l border-border')}
+        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); catRef.current?.focus(); } }}
+      >
+        <option value="">—</option>
+        {projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+      </select>
       <select
         ref={catRef} value={category}
         onChange={(e) => { setCategory(e.target.value); }}
@@ -399,7 +422,26 @@ export default function MonthView({ year, month, onMonthChange, onYearChange, us
   const [newIncome, setNewIncome] = useState({ name: '', actual: '' });
   const [newDebt, setNewDebt] = useState({ name: '', actual: '' });
   const [newBill, setNewBill] = useState({ name: '', category: billCats[0] || '', actual: '' });
-  const [newExpense, setNewExpense] = useState({ name: '', category: expCats[0] || '', date: todayStr, amount: '' });
+  const [newExpense, setNewExpense] = useState({ name: '', projectId: '', category: expCats[0] || '', date: todayStr, amount: '' });
+
+  // Active projects shown in the add-row dropdown. Existing rows also need
+  // to show archived projects they're already linked to, so each row gets a
+  // combined list of active + currently-selected (even if archived).
+  const activeProjects = useMemo(
+    () => store.state.projects.filter((p) => !p.archived).map((p) => ({ id: p.id, name: p.name })),
+    [store.state.projects]
+  );
+  const projectsById = useMemo(() => {
+    const map = new Map<string, { id: string; name: string }>();
+    store.state.projects.forEach((p) => map.set(p.id, { id: p.id, name: p.name }));
+    return map;
+  }, [store.state.projects]);
+  const projectsForRow = (selectedId?: string) => {
+    if (!selectedId || projectsById.get(selectedId) === undefined) return activeProjects;
+    const sel = projectsById.get(selectedId)!;
+    if (activeProjects.some((p) => p.id === sel.id)) return activeProjects;
+    return [...activeProjects, sel];
+  };
 
   // Refs for focusing add rows
   const addIncomeNameRef = useRef<HTMLInputElement>(null);
@@ -410,6 +452,7 @@ export default function MonthView({ year, month, onMonthChange, onYearChange, us
   const addBillCatRef = useRef<HTMLSelectElement>(null);
   const addBillAmountRef = useRef<HTMLInputElement>(null);
   const addExpenseNameRef = useRef<HTMLInputElement>(null);
+  const addExpenseProjectRef = useRef<HTMLSelectElement>(null);
   const addExpenseCatRef = useRef<HTMLSelectElement>(null);
   const addExpenseDateRef = useRef<HTMLInputElement>(null);
   const addExpenseAmountRef = useRef<HTMLInputElement>(null);
@@ -490,10 +533,14 @@ export default function MonthView({ year, month, onMonthChange, onYearChange, us
     const n = newExpense.name.trim();
     if (!n) return;
     const a = Number(newExpense.amount) || 0;
+    const pid = newExpense.projectId || undefined;
     const item: Expense = { id: `opt-${Date.now()}`, name: n, category: newExpense.category, date: newExpense.date, amount: a, addedBy: userEmail };
+    if (pid) item.projectId = pid;
     setOptimistic((prev) => ({ ...prev, expenses: [...prev.expenses, item] }));
-    store.addExpense(year, month, { name: n, category: newExpense.category, date: newExpense.date, amount: a, addedBy: userEmail });
-    setNewExpense({ name: '', category: expCats[0] || '', date: todayStr, amount: '' });
+    const payload: Omit<Expense, 'id'> = { name: n, category: newExpense.category, date: newExpense.date, amount: a, addedBy: userEmail };
+    if (pid) payload.projectId = pid;
+    store.addExpense(year, month, payload);
+    setNewExpense({ name: '', projectId: '', category: expCats[0] || '', date: todayStr, amount: '' });
   };
 
   // ─── Budgets inline editing ─────────────────────────────────
@@ -828,6 +875,7 @@ export default function MonthView({ year, month, onMonthChange, onYearChange, us
         <div className="divide-y divide-border">
           <div className={cn('grid', gridExpense, 'bg-muted/50')}>
             <div className="h-8 px-2.5 flex items-center text-xs font-semibold text-muted-foreground">{t('common.name')}</div>
+            <div className="h-8 px-2.5 flex items-center text-xs font-semibold text-muted-foreground border-l border-border">{t('month.project')}</div>
             <div className="h-8 px-2.5 flex items-center text-xs font-semibold text-muted-foreground border-l border-border">{t('month.category')}</div>
             <div className="h-8 px-2.5 flex items-center text-xs font-semibold text-muted-foreground border-l border-border">{t('month.date')}</div>
             <div className="h-8 px-2.5 flex items-center justify-end text-xs font-semibold text-muted-foreground border-l border-border">{t('month.amount')}</div>
@@ -843,6 +891,7 @@ export default function MonthView({ year, month, onMonthChange, onYearChange, us
               listId="expense-suggestions"
               categories={expCats}
               color="text-red-500"
+              projects={projectsForRow(e.projectId)}
             />
           ))}
           <div
@@ -859,8 +908,18 @@ export default function MonthView({ year, month, onMonthChange, onYearChange, us
               list="expense-suggestions"
               className={cn(cellBase, 'placeholder:text-muted-foreground/40')}
               placeholder={t('month.expenseNamePlaceholder')}
-              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addExpenseCatRef.current?.focus(); } }}
+              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addExpenseProjectRef.current?.focus(); } }}
             />
+            <select
+              ref={addExpenseProjectRef}
+              value={newExpense.projectId}
+              onChange={(e) => setNewExpense((prev) => ({ ...prev, projectId: e.target.value }))}
+              className={cn(cellBase, 'text-xs cursor-pointer border-l border-border')}
+              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addExpenseCatRef.current?.focus(); } }}
+            >
+              <option value="">—</option>
+              {activeProjects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+            </select>
             <select
               ref={addExpenseCatRef}
               value={newExpense.category}
