@@ -99,6 +99,7 @@ export default function Settings() {
       settings: { ...settings },
       months: {},
       currentYear: new Date().getFullYear(),
+      projects: [],
     });
     setConfirmReset(false);
   };
