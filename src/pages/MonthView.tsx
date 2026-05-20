@@ -317,6 +317,44 @@ export default function MonthView({ year, month, onMonthChange, onYearChange, us
     setOptimistic({ incomes: [], debts: [], bills: [], expenses: [] });
   }, [md]);
 
+  // ─── Stable expense display order ───────────────────────────
+  // Sort expenses by date only on initial mount or month navigation;
+  // edits and new entries preserve their existing position so rows
+  // don't jump around in front of the user.
+  const monthKey = `${year}-${month}`;
+  const [expenseOrder, setExpenseOrder] = useState<{ key: string; ids: string[] }>(() => ({
+    key: monthKey,
+    ids: [...md.expenses].sort((a, b) => b.date.localeCompare(a.date)).map((e) => e.id),
+  }));
+
+  useEffect(() => {
+    setExpenseOrder((prev) => {
+      if (prev.key !== monthKey) {
+        return {
+          key: monthKey,
+          ids: [...md.expenses].sort((a, b) => b.date.localeCompare(a.date)).map((e) => e.id),
+        };
+      }
+      const prevSet = new Set(prev.ids);
+      const currentIds = md.expenses.map((e) => e.id);
+      const currentSet = new Set(currentIds);
+      const kept = prev.ids.filter((id) => currentSet.has(id));
+      const appended = currentIds.filter((id) => !prevSet.has(id));
+      return { key: monthKey, ids: [...kept, ...appended] };
+    });
+  }, [md.expenses, monthKey]);
+
+  const orderedExpenses = useMemo(() => {
+    const byId = new Map(md.expenses.map((e) => [e.id, e]));
+    const ordered = expenseOrder.ids
+      .map((id) => byId.get(id))
+      .filter((e): e is Expense => e !== undefined);
+    // Include any expenses that arrived before the order effect ran
+    const seen = new Set(expenseOrder.ids);
+    const missing = md.expenses.filter((e) => !seen.has(e.id));
+    return [...ordered, ...missing];
+  }, [md.expenses, expenseOrder]);
+
   // ─── Copy modal state ───────────────────────────────────────
   const [showCopy, setShowCopy] = useState(false);
   const [copySections, setCopySections] = useState<string[]>(['incomes', 'debts', 'bills', 'budgets', 'savings', 'investments']);
@@ -795,7 +833,7 @@ export default function MonthView({ year, month, onMonthChange, onYearChange, us
             <div className="h-8 px-2.5 flex items-center justify-end text-xs font-semibold text-muted-foreground border-l border-border">{t('month.amount')}</div>
             <div className="h-8 border-l border-border" />
           </div>
-          {[...md.expenses, ...optimistic.expenses].sort((a, b) => b.date.localeCompare(a.date)).map((e) => (
+          {[...orderedExpenses, ...optimistic.expenses].map((e) => (
             <EditableExpenseRow
               key={e.id}
               item={e}
