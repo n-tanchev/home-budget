@@ -119,7 +119,7 @@ function ProjectForm({ initial, onSubmit, onCancel, submitLabel }: {
     onSubmit({
       name: n,
       totalBudget: total,
-      monthlyBudget: monthly > 0 ? monthly : undefined,
+      ...(monthly > 0 ? { monthlyBudget: monthly } : {}),
     });
   };
 
